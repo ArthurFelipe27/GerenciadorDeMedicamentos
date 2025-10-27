@@ -1,36 +1,42 @@
 package br.com.sistema.controle_medicamentos.dto;
 
 import br.com.sistema.controle_medicamentos.model.Prescricao;
-
 import java.time.LocalDateTime;
 
-public record PrescricaoResponseDTO(
-        Long id,
-        MedicamentoSimplesDTO medicamento, 
-        String dosagemPrescrita,
-        LocalDateTime dataHoraInicio,
-        int intervaloHoras,
-        int duracaoDias,
-        String instrucoes,
-        boolean ativa
-) {
-    // Método construtor auxiliar para facilitar a conversão
-    // Agora que Prescricao tem getters manuais, isso vai funcionar.
+public class PrescricaoResponseDTO {
+    
+    private Long id;
+    private LocalDateTime dataHoraInicio;
+    private int intervaloHoras;
+    private int duracaoDias;
+    private String instrucoes;
+    private String dosagemPrescrita;
+    private int quantidadePorDose; 
+    private Long itemInventarioId; 
+    private MedicamentoSimplesDTO medicamento; 
+
     public PrescricaoResponseDTO(Prescricao p) {
-        this(
-                p.getId(),
-                new MedicamentoSimplesDTO(
-                        p.getMedicamento().getId(),
-                        p.getMedicamento().getNome(),
-                        p.getMedicamento().getDosagem()
-                ),
-                p.getDosagemPrescrita(),
-                p.getDataHoraInicio(),
-                p.getIntervaloHoras(),
-                p.getDuracaoDias(),
-                p.getInstrucoes(),
-                p.isAtiva()
-        );
+        this.id = p.getId();
+        this.dataHoraInicio = p.getDataHoraInicio();
+        this.intervaloHoras = p.getIntervaloHoras();
+        this.duracaoDias = p.getDuracaoDias();
+        this.instrucoes = p.getInstrucoes();
+        this.dosagemPrescrita = p.getDosagemPrescrita();
+        this.quantidadePorDose = p.getQuantidadePorDose();
+        this.itemInventarioId = p.getItemInventario().getId();
+        // Esta linha está CORRETA
+        this.medicamento = new MedicamentoSimplesDTO(p.getItemInventario().getMedicamento());
     }
+
+    // --- Getters (Manuais) ---
+    public Long getId() { return id; }
+    public LocalDateTime getDataHoraInicio() { return dataHoraInicio; }
+    public int getIntervaloHoras() { return intervaloHoras; }
+    public int getDuracaoDias() { return duracaoDias; }
+    public String getInstrucoes() { return instrucoes; }
+    public String getDosagemPrescrita() { return dosagemPrescrita; }
+    public int getQuantidadePorDose() { return quantidadePorDose; }
+    public Long getItemInventarioId() { return itemInventarioId; }
+    public MedicamentoSimplesDTO getMedicamento() { return medicamento; }
 }
 

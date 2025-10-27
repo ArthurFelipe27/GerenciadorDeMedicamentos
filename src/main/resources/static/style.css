@@ -46,6 +46,21 @@ header h1 {
     color: #555;
 }
 
+/* NOVO: Alerta de Estoque Baixo */
+.alert-box-estoque {
+    background-color: #fff3cd;
+    /* Amarelo */
+    color: #664d03;
+    border: 1px solid #ffecb5;
+    border-left-width: 5px;
+    border-left-color: #ffc107;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    animation: fadeIn 0.5s;
+}
+
 /* Estilo unificado para os cards */
 .card {
     background-color: #fff;
@@ -61,7 +76,6 @@ header h1 {
     margin: 40px auto;
 }
 
-
 .card h2 {
     color: #333;
     border-bottom: 2px solid #f0f0f0;
@@ -69,6 +83,16 @@ header h1 {
     margin-bottom: 20px;
     font-size: 1.25rem;
 }
+
+.card h3 {
+    font-size: 1.1rem;
+    color: #444;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 20px;
+}
+
 
 .card p {
     font-size: 0.95rem;
@@ -97,13 +121,12 @@ form {
     gap: 15px;
 }
 
-/* Layout em grid para os formulários do index.html */
 #form-catalogo,
-#form-prescricao {
+#form-prescricao,
+#form-inventario {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    /* Espaço entre os campos */
 }
 
 .form-group {
@@ -120,6 +143,7 @@ form {
 input[type="text"],
 input[type="number"],
 input[type="datetime-local"],
+input[type="date"],
 input[type="password"],
 select {
     width: 100%;
@@ -154,11 +178,12 @@ button[type="submit"] {
     color: white;
 }
 
-/* Faz o botão ocupar a linha toda no grid */
 #form-catalogo button[type="submit"],
-#form-prescricao button[type="submit"] {
+#form-inventario button[type="submit"],
+.form-buttons {
     grid-column: 1 / -1;
 }
+
 
 button[type="submit"]:hover {
     background-color: #0056b3;
@@ -177,12 +202,39 @@ button:active {
     background-color: #c82333;
 }
 
-/* Lista de Prescrições */
-#lista-prescricoes {
+/* Botões do formulário de prescrição */
+.form-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 600px) {
+    .form-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+#cancelar-edicao-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+#cancelar-edicao-btn:hover {
+    background-color: #5a6268;
+}
+
+
+/* Listas (Prescrição, Inventário, Relatório) */
+#lista-prescricoes,
+#lista-relatorio,
+#lista-inventario {
     list-style-type: none;
 }
 
-#lista-prescricoes li {
+#lista-prescricoes li,
+#lista-relatorio li,
+#lista-inventario li {
     background-color: #f9f9f9;
     padding: 15px;
     border: 1px solid #eee;
@@ -193,22 +245,51 @@ button:active {
     align-items: center;
     line-height: 1.5;
     flex-wrap: wrap;
-    /* Para telas pequenas */
+    border-left: 5px solid #ccc;
 }
 
-#lista-prescricoes li small {
+#lista-prescricoes li small,
+#lista-relatorio li small,
+#lista-inventario li small {
     color: #555;
     display: block;
-    /* Faz a data ficar abaixo do nome */
+}
+
+/* NOVO: Estilo da lista de inventário */
+#lista-inventario li.alerta-estoque {
+    border-left-color: #dc3545;
+    /* Vermelho */
+    background-color: #fdf0f0;
+}
+
+
+/* Container para os botões da lista */
+.botoes-acao {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+    /* Separa do texto */
+}
+
+/* Botão de Editar */
+.edit-btn {
+    background-color: #f1f1f1;
+    color: #007bff;
+    /* Azul */
+    font-size: 0.8rem;
+    padding: 5px 10px;
+}
+
+.edit-btn:hover {
+    background-color: #e2e2e2;
 }
 
 .delete-btn {
     background-color: #f1f1f1;
     color: #dc3545;
+    /* Vermelho */
     font-size: 0.8rem;
     padding: 5px 10px;
-    margin-left: 10px;
-    /* Separa o botão do texto */
 }
 
 .delete-btn:hover {
@@ -216,7 +297,27 @@ button:active {
 }
 
 
-/* Modal de Alerta */
+/* Estilos do Relatório (baseado no status) */
+#lista-relatorio li {
+    background-color: #fdfdfd;
+    justify-content: flex-start;
+    gap: 15px;
+}
+
+#lista-relatorio li.status-tomada {
+    border-left-color: #28a745;
+    /* Verde */
+    background-color: #f0fff4;
+}
+
+#lista-relatorio li.status-pulada {
+    border-left-color: #ffc107;
+    /* Laranja */
+    background-color: #fffaf0;
+}
+
+
+/* Modal de Alerta de Dose */
 .modal-overlay {
     position: fixed;
     z-index: 1000;
@@ -226,7 +327,6 @@ button:active {
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.5);
-    /* Fundo escuro */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -253,7 +353,7 @@ button:active {
 
 .modal-content p {
     font-size: 1.1rem;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .modal-close {
@@ -271,6 +371,31 @@ button:active {
     text-decoration: none;
     cursor: pointer;
 }
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-confirm {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background-color: #218838;
+}
+
+.btn-skip {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.btn-skip:hover {
+    background-color: #e0a800;
+}
+
 
 @keyframes fadeIn {
     from {

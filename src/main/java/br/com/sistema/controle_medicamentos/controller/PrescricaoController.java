@@ -2,10 +2,10 @@ package br.com.sistema.controle_medicamentos.controller;
 
 import br.com.sistema.controle_medicamentos.dto.PrescricaoDTO;
 import br.com.sistema.controle_medicamentos.dto.PrescricaoResponseDTO;
-import br.com.sistema.controle_medicamentos.model.Medicamento;
+import br.com.sistema.controle_medicamentos.model.ItemInventario; 
 import br.com.sistema.controle_medicamentos.model.Prescricao;
 import br.com.sistema.controle_medicamentos.model.Usuario;
-import br.com.sistema.controle_medicamentos.repository.MedicamentoRepository;
+import br.com.sistema.controle_medicamentos.repository.ItemInventarioRepository; 
 import br.com.sistema.controle_medicamentos.repository.PrescricaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,80 +26,125 @@ public class PrescricaoController {
     private PrescricaoRepository prescricaoRepository;
 
     @Autowired
-    private MedicamentoRepository medicamentoRepository;
+    private ItemInventarioRepository inventarioRepository; 
 
-    // Método helper para pegar o usuário logado
     private Usuario getUsuarioLogado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado");
-        }
         return (Usuario) authentication.getPrincipal();
     }
 
-    // LISTAR todas as prescrições DO USUÁRIO LOGADO
+    // GET /api/prescricoes (Listar prescrições do usuário)
     @GetMapping
-    public List<PrescricaoResponseDTO> listarPrescricoesDoUsuario() {
+    public ResponseEntity<List<PrescricaoResponseDTO>> listarPrescricoesDoUsuario() {
         Usuario usuario = getUsuarioLogado();
-        List<Prescricao> prescricoes = prescricaoRepository.findByUsuarioId(usuario.getId());
         
-        // Converte a lista de Entidades para a lista de DTOs
-        return prescricoes.stream()
-                .map(PrescricaoResponseDTO::new) // Usa o construtor do DTO
-                .collect(Collectors.toList());
-    }
+        // CORREÇÃO: Chamando o método renomeado 'findByUsuarioId'
+        List<Prescricao> prescricoes = prescricaoRepository.findByUsuarioId(usuario.getId()); 
 
-    // LISTAR prescrições ATIVAS do usuário
-    @GetMapping("/ativas")
-    public List<PrescricaoResponseDTO> listarPrescricoesAtivas() {
-        Usuario usuario = getUsuarioLogado();
-        List<Prescricao> prescricoesAtivas = prescricaoRepository.findByUsuarioIdAndAtiva(usuario.getId(), true);
-        
-        // Converte para DTO
-        return prescricoesAtivas.stream()
+        List<PrescricaoResponseDTO> dtos = prescricoes.stream()
                 .map(PrescricaoResponseDTO::new)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-
-    // ADICIONAR uma nova prescrição para o usuário logado
-    @PostMapping
-    public ResponseEntity<Prescricao> adicionarPrescricao(@RequestBody PrescricaoDTO dto) {
+    // GET /api/prescricoes/ativas (Listar prescrições ativas)
+    @GetMapping("/ativas")
+    public ResponseEntity<List<PrescricaoResponseDTO>> listarPrescricoesAtivas() {
         Usuario usuario = getUsuarioLogado();
-        
-        // O DTO terá apenas o ID do medicamento, precisamos buscá-lo
-        Medicamento medicamento = medicamentoRepository.findById(dto.medicamentoId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicamento não encontrado"));
+        LocalDateTime agora = LocalDateTime.now();
+        List<Prescricao> prescricoes = prescricaoRepository.findPrescricoesAtivas(usuario.getId(), agora);
+
+        List<PrescricaoResponseDTO> dtos = prescricoes.stream()
+                .map(PrescricaoResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    // POST /api/prescricoes (Adicionar nova prescrição)
+    @PostMapping
+    public ResponseEntity<?> adicionarPrescricao(@RequestBody PrescricaoDTO dto) {
+        Usuario usuario = getUsuarioLogado();
+
+        ItemInventario item = inventarioRepository.findById(dto.getItemInventarioId())
+                .orElse(null);
+
+        if (item == null) {
+            return ResponseEntity.badRequest().body("Item do inventário não encontrado.");
+        }
+        if (!item.getUsuario().getId().equals(usuario.getId())) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Item do inventário não pertence a este usuário.");
+        }
 
         Prescricao novaPrescricao = new Prescricao();
-        novaPrescricao.setUsuario(usuario);
-        novaPrescricao.setMedicamento(medicamento);
-        novaPrescricao.setDosagemPrescrita(dto.dosagemPrescrita());
-        novaPrescricao.setDataHoraInicio(dto.dataHoraInicio());
-        novaPrescricao.setIntervaloHoras(dto.intervaloHoras());
-        novaPrescricao.setDuracaoDias(dto.duracaoDias());
-        novaPrescricao.setInstrucoes(dto.instrucoes());
-        novaPrescricao.setAtiva(true); // Começa como ativa
+        novaPrescricao.setUsuario(usuario); // Seta o usuário na prescrição
+        novaPrescricao.setItemInventario(item); 
+        novaPrescricao.setQuantidadePorDose(dto.getQuantidadePorDose()); 
+        novaPrescricao.setDosagemPrescrita(dto.getDosagemPrescrita());
+        novaPrescricao.setDataHoraInicio(dto.getDataHoraInicio());
+        novaPrescricao.setIntervaloHoras(dto.getIntervaloHoras());
+        novaPrescricao.setDuracaoDias(dto.getDuracaoDias());
+        novaPrescricao.setInstrucoes(dto.getInstrucoes());
+        novaPrescricao.setAtiva(true); 
 
-        Prescricao salva = prescricaoRepository.save(novaPrescricao);
-        return ResponseEntity.status(HttpStatus.CREATED).body(salva);
+        Prescricao prescricaoSalva = prescricaoRepository.save(novaPrescricao);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(new PrescricaoResponseDTO(prescricaoSalva));
     }
 
-    // DELETAR uma prescrição (apenas se pertencer ao usuário)
+    // PUT /api/prescricoes/{id} (Atualizar prescrição)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarPrescricao(@PathVariable Long id, @RequestBody PrescricaoDTO dto) {
+        Usuario usuario = getUsuarioLogado();
+
+        Prescricao prescricao = prescricaoRepository.findById(id)
+                .orElse(null);
+        if (prescricao == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!prescricao.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Esta prescrição não pertence a você.");
+        }
+
+        ItemInventario item = inventarioRepository.findById(dto.getItemInventarioId())
+                .orElse(null);
+        if (item == null) {
+            return ResponseEntity.badRequest().body("Item do inventário não encontrado.");
+        }
+        if (!item.getUsuario().getId().equals(usuario.getId())) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Item do inventário não pertence a este usuário.");
+        }
+
+        prescricao.setItemInventario(item);
+        prescricao.setQuantidadePorDose(dto.getQuantidadePorDose());
+        prescricao.setDosagemPrescrita(dto.getDosagemPrescrita());
+        prescricao.setDataHoraInicio(dto.getDataHoraInicio());
+        prescricao.setIntervaloHoras(dto.getIntervaloHoras());
+        prescricao.setDuracaoDias(dto.getDuracaoDias());
+        prescricao.setInstrucoes(dto.getInstrucoes());
+
+        Prescricao prescricaoAtualizada = prescricaoRepository.save(prescricao);
+        
+        return ResponseEntity.ok(new PrescricaoResponseDTO(prescricaoAtualizada));
+    }
+
+
+    // DELETE /api/prescricoes/{id} (Deletar prescrição)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarPrescricao(@PathVariable Long id) {
         Usuario usuario = getUsuarioLogado();
-        
-        return prescricaoRepository.findById(id)
-                .map(prescricao -> {
-                    if (!prescricao.getUsuario().getId().equals(usuario.getId())) {
-                        // Usuário tentando deletar prescrição de outro
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado");
-                    }
-                    prescricaoRepository.delete(prescricao);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+
+        Prescricao prescricao = prescricaoRepository.findById(id)
+                .orElse(null);
+
+        if (prescricao == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!prescricao.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Esta prescrição não pertence a você.");
+        }
+
+        prescricaoRepository.delete(prescricao);
+        return ResponseEntity.ok().build();
     }
 }
 
