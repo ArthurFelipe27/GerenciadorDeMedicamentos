@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         
                         // Libera o front-end estático
-                        .requestMatchers("/*.html", "/*.js", "/*.css").permitAll()
+                        .requestMatchers("/*.html", "/*.js", "/*.css", "/img/**").permitAll()
 
                         // Protege todos os endpoints de medicamentos
                         .requestMatchers("/api/medicamentos/**").authenticated() 

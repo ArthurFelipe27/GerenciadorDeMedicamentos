@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version> <!-- Ajustei para uma versão estável recente, 3.5.7 não existe -->
+        <version>3.3.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>br.com.sistema</groupId>
@@ -32,6 +32,7 @@
 
         <!-- 
                 DEPENDÊNCIAS FALTANTES (ESSENCIAIS) 
+                *** CORREÇÃO: Adicionadas as dependências de segurança e JWT ***
         -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,22 +1,4 @@
-/* Reset Básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-}
+/* Estilos específicos para index.html (App Principal) */
 
 header {
     display: flex;
@@ -46,7 +28,7 @@ header h1 {
     color: #555;
 }
 
-/* NOVO: Alerta de Estoque Baixo */
+/* Alerta de Estoque Baixo */
 .alert-box-estoque {
     background-color: #fff3cd;
     /* Amarelo */
@@ -61,29 +43,6 @@ header h1 {
     animation: fadeIn 0.5s;
 }
 
-/* Estilo unificado para os cards */
-.card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 25px;
-    margin-bottom: 20px;
-}
-
-/* Específico para o card de login */
-#login-card {
-    max-width: 450px;
-    margin: 40px auto;
-}
-
-.card h2 {
-    color: #333;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    font-size: 1.25rem;
-}
-
 .card h3 {
     font-size: 1.1rem;
     color: #444;
@@ -93,34 +52,7 @@ header h1 {
     padding-top: 20px;
 }
 
-
-.card p {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-/* Mensagens de Erro/Sucesso */
-.error-message {
-    color: #dc3545;
-    font-size: 0.9rem;
-    margin-top: 10px;
-}
-
-.success-message {
-    color: #28a745;
-    font-size: 0.9rem;
-    margin-top: 10px;
-}
-
-
-/* Formulários */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
+/* Layouts de Formulário (Grid) */
 #form-catalogo,
 #form-prescricao,
 #form-inventario {
@@ -129,70 +61,13 @@ form {
     gap: 15px;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-weight: 600;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="datetime-local"],
-input[type="date"],
-input[type="password"],
-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    font-family: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-input:focus,
-select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-/* Botões */
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    padding: 12px 15px;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-button[type="submit"] {
-    background-color: #007bff;
-    color: white;
-}
-
 #form-catalogo button[type="submit"],
 #form-inventario button[type="submit"],
 .form-buttons {
     grid-column: 1 / -1;
 }
 
-
-button[type="submit"]:hover {
-    background-color: #0056b3;
-}
-
-button:active {
-    transform: translateY(1px);
-}
-
+/* Botões específicos do App */
 #logout-button {
     background-color: #dc3545;
     color: white;
@@ -202,7 +77,6 @@ button:active {
     background-color: #c82333;
 }
 
-/* Botões do formulário de prescrição */
 .form-buttons {
     display: grid;
     grid-template-columns: 1fr;
@@ -255,7 +129,7 @@ button:active {
     display: block;
 }
 
-/* NOVO: Estilo da lista de inventário */
+/* Estilo da lista de inventário */
 #lista-inventario li.alerta-estoque {
     border-left-color: #dc3545;
     /* Vermelho */
@@ -394,17 +268,4 @@ button:active {
 
 .btn-skip:hover {
     background-color: #e0a800;
-}
-
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }

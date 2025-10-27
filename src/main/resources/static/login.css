@@ -1,0 +1,109 @@
+/* Estilos específicos para login.html */
+
+/* *** NOVO: Garante que o body ocupe 100% da altura *** */
+html,
+.login-body {
+    height: 100%;
+    overflow: hidden;
+    /* Impede o scroll na página de login */
+}
+
+/* *** ATUALIZADO: Wrapper da tela dividida *** */
+.login-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    /* Ocupa 100% da altura da viewport */
+}
+
+/* *** ATUALIZADO: Painel da Imagem (Esquerda) *** */
+.login-image-container {
+    flex: 1;
+    /* Ocupa 50% da largura */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/img/senhor.png');
+    background-size: cover;
+    background-position: center;
+
+    /* Centraliza o título */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    text-align: center;
+    color: white;
+}
+
+/* *** NOVO: Título do Sistema *** */
+.system-title {
+    font-size: 3rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* *** NOVO: Painel do Formulário (Direita) *** */
+.form-pane {
+    flex: 1;
+    /* Ocupa 50% da largura */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #f0f2f5;
+    /* Cor de fundo do painel */
+    overflow-y: auto;
+    /* Permite scroll se o card for muito alto */
+}
+
+/* *** ATUALIZADO: Estilo do Card *** */
+#login-card {
+    max-width: 450px;
+    width: 100%;
+    margin: 0;
+    /* Remove a margem automática */
+    animation: fadeIn 0.5s ease-out;
+    /* Adiciona uma animação suave */
+}
+
+/* *** REMOVIDO: Estilo da imagem placeholder anterior *** */
+/* .login-hero-image { ... } */
+
+
+/* *** ATUALIZADO: Media Query para telas pequenas *** */
+@media (max-width: 900px) {
+    .login-wrapper {
+        flex-direction: column;
+        /* Empilha os painéis */
+        height: auto;
+        min-height: 100vh;
+    }
+
+    html,
+    .login-body {
+        overflow: auto;
+        /* Permite scroll no mobile */
+    }
+
+    .login-image-container {
+        flex: none;
+        /* Remove a proporção flex */
+        min-height: 250px;
+        /* Altura fixa para o header com a imagem */
+    }
+
+    .system-title {
+        font-size: 2.2rem;
+        /* Título menor no mobile */
+    }
+
+    .form-pane {
+        flex-grow: 1;
+        /* Ocupa o restante do espaço */
+        padding: 20px;
+        /* Garante padding no mobile */
+    }
+
+    #login-card {
+        margin: 0;
+        /* Já estava 0, mas garantindo */
+    }
+}

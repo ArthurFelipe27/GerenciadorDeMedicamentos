@@ -1,11 +1,14 @@
 package br.com.sistema.controle_medicamentos.controller;
 
 import br.com.sistema.controle_medicamentos.dto.DoseTomadaResponseDTO;
+import br.com.sistema.controle_medicamentos.dto.ItemInventarioResponseDTO;
 import br.com.sistema.controle_medicamentos.dto.RegistrarDoseDTO;
 import br.com.sistema.controle_medicamentos.model.DoseTomada;
+import br.com.sistema.controle_medicamentos.model.ItemInventario;
 import br.com.sistema.controle_medicamentos.model.Prescricao;
 import br.com.sistema.controle_medicamentos.model.Usuario;
 import br.com.sistema.controle_medicamentos.repository.DoseTomadaRepository;
+import br.com.sistema.controle_medicamentos.repository.ItemInventarioRepository; // *** CORREÇÃO: Importado ***
 import br.com.sistema.controle_medicamentos.repository.PrescricaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,10 @@ public class DoseTomadaController {
 
     @Autowired
     private PrescricaoRepository prescricaoRepository;
+
+    // *** CORREÇÃO: Injetado o repositório do inventário para debitar o estoque ***
+    @Autowired
+    private ItemInventarioRepository itemInventarioRepository;
 
     // Endpoint para o front-end registrar uma dose (Atualizado)
     @PostMapping
@@ -60,7 +67,26 @@ public class DoseTomadaController {
         novaDose.setStatus(status); // Salva o status
         doseTomadaRepository.save(novaDose);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        // *** CORREÇÃO: Lógica de débito de estoque ***
+        if (status.equals("TOMADA")) {
+            // Busca o item do inventário associado a esta prescrição
+            ItemInventario item = prescricao.getItemInventario();
+            int quantidadeADebitar = prescricao.getQuantidadePorDose();
+            
+            // Debita o estoque
+            int novoEstoque = item.getQuantidadeAtual() - quantidadeADebitar;
+            // Garante que o estoque não fique negativo (embora o front-end deva travar)
+            item.setQuantidadeAtual(Math.max(0, novoEstoque)); 
+            
+            // Salva a atualização do inventário
+            ItemInventario itemSalvo = itemInventarioRepository.save(item);
+
+            // Retorna o DTO do inventário atualizado (como o front-end espera)
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ItemInventarioResponseDTO(itemSalvo));
+        } else {
+            // Se foi "PULADA", apenas retorna 201 Created sem corpo
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
     }
 
     // Endpoint para o front-end buscar o relatório (Sem alterações)
@@ -81,4 +107,3 @@ public class DoseTomadaController {
         return ResponseEntity.ok(dtos);
     }
 }
-
