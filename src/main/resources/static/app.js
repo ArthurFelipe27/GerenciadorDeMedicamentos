@@ -40,14 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let alertasMostrados = new Set();
     const INTERVALO_VERIFICACAO = 30000;
 
-    // *** CORREÇÃO: Função auxiliar para converter UTC (do backend) para o formato do input datetime-local ***
+    // Função auxiliar para converter UTC (do backend) para o formato do input datetime-local
     function converterUTCParaInputLocal(isoString) {
         if (!isoString) return "";
         const date = new Date(isoString);
-        // Subtrai o offset do fuso horário (em minutos) * 60000 (ms) para "enganar" o toISOString
-        // e fazê-lo gerar a string no horário local, mas com formato ISO.
         const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-        // Converte para ISO e pega a parte YYYY-MM-DDTHH:MM
         return localDate.toISOString().slice(0, 16);
     }
 
@@ -82,6 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Erro ao carregar catálogo:', error);
             inventarioMedicamentoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
         }
+        // SUGESTÃO: Renderiza ícones estáticos (não é estritamente necessário aqui, mas bom para garantir)
+        lucide.createIcons();
     };
 
     const carregarInventario = async () => {
@@ -109,12 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             inventarioPessoal.forEach(item => {
                 const li = document.createElement('li');
-                // *** CORREÇÃO: Usando toLocaleString('pt-BR', { timeZone: 'UTC' }) para formatar a data de validade ***
-                // timeZone: 'UTC' garante que a data (YYYY-MM-DD) seja lida como UTC e não mude o dia.
                 const validadeFormatada = item.dataValidade
                     ? new Date(item.dataValidade).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
                     : 'N/A';
 
+                // SUGESTÃO: Adicionados ícones aos botões
                 li.innerHTML = `
                     <div>
                         <strong>${item.medicamento.nome} (${item.medicamento.dosagem})</strong><br>
@@ -122,7 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <small>Validade: ${validadeFormatada}</small>
                     </div>
                     <div class="botoes-acao">
-                        <button class="delete-btn delete-inventario-btn" data-id="${item.id}">Excluir</button>
+                        <button class="delete-btn delete-inventario-btn" data-id="${item.id}" title="Excluir item">
+                            <i data-lucide="trash-2"></i>
+                        </button>
                     </div>
                 `;
 
@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Erro ao carregar inventário:', error);
             listaInventario.innerHTML = '<li>Erro ao carregar inventário.</li>';
         }
+        // SUGESTÃO: Renderiza os ícones dinâmicos (trash-2)
+        lucide.createIcons();
     };
 
     const carregarPrescricoes = async () => {
@@ -172,19 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
             prescricoes.forEach(p => {
                 const item = document.createElement('li');
 
-                // Convertendo o Instant (UTC) para o formato do input (local)
                 const dataInicioFormatada = converterUTCParaInputLocal(p.dataHoraInicio);
-
-                // Convertendo o Instant (UTC) para exibição (local)
                 const dataInicio = new Date(p.dataHoraInicio);
                 const dataInicioExibicao = dataInicio.toLocaleString('pt-BR');
+                const dataFim = new Date(dataInicio);
+                dataFim.setDate(dataInicio.getDate() + p.duracaoDias);
+                const dataFimExibicao = dataFim.toLocaleString('pt-BR');
 
-                // *** SUGESTÃO APLICADA: Cálculo da Data Final ***
-                const dataFim = new Date(dataInicio); // Cria uma cópia da data de início
-                dataFim.setDate(dataInicio.getDate() + p.duracaoDias); // Adiciona os dias de duração
-                const dataFimExibicao = dataFim.toLocaleString('pt-BR'); // Formata para exibição
-                // *** FIM DA SUGESTÃO ***
-
+                // SUGESTÃO: Adicionados ícones aos botões
                 item.innerHTML = `
                     <div>
                         <strong>${p.medicamento.nome} (${p.dosagemPrescrita})</strong><br>
@@ -195,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="botoes-acao">
                         <button class="edit-btn" 
+                            title="Editar prescrição"
                             data-id="${p.id}"
                             data-item-inventario-id="${p.itemInventarioId}"
                             data-dosagem-texto="${p.dosagemPrescrita}"
@@ -203,9 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             data-intervalo="${p.intervaloHoras}"
                             data-duracao="${p.duracaoDias}"
                             data-instrucoes="${p.instrucoes || ''}">
-                            Editar
+                            <i data-lucide="edit-3"></i>
                         </button>
-                        <button class="delete-btn delete-prescricao-btn" data-id="${p.id}">Excluir</button>
+                        <button class="delete-btn delete-prescricao-btn" data-id="${p.id}" title="Excluir prescrição">
+                            <i data-lucide="trash-2"></i>
+                        </button>
                     </div>
                 `;
                 listaPrescricoes.appendChild(item);
@@ -213,6 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Erro ao carregar prescrições:', error);
         }
+        // SUGESTÃO: Renderiza os ícones dinâmicos (edit-3, trash-2)
+        lucide.createIcons();
     };
 
     const carregarRelatorio = async () => {
@@ -233,8 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let statusClasse = (dose.status === 'TOMADA') ? 'status-tomada' : 'status-pulada';
                 let statusTexto = (dose.status === 'TOMADA') ? 'Tomada' : 'Pulada';
                 item.className = statusClasse;
-
-                // Convertendo o Instant (UTC) para exibição (local)
                 const dataTomadaExibicao = new Date(dose.dataHoraTomada).toLocaleString('pt-BR');
 
                 item.innerHTML = `
@@ -249,6 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Erro ao carregar relatório:', error);
             listaRelatorio.innerHTML = '<li>Erro ao carregar relatório.</li>';
         }
+        // SUGESTÃO: Renderiza ícones (se houver algum no futuro)
+        lucide.createIcons();
     };
 
     // --- 2. Funções de Ação (CRUD) ---
@@ -303,7 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleDeletarInventario = async (event) => {
-        const btn = event.target;
+        // SUGESTÃO: Melhoria para pegar o botão mesmo se clicar no ícone
+        const btn = event.target.closest('.delete-inventario-btn');
+        if (!btn) return;
+
         const id = btn.dataset.id;
 
         try {
@@ -325,13 +330,22 @@ document.addEventListener('DOMContentLoaded', () => {
         idPrescricaoEdicao = null;
         formPrescricaoTitulo.textContent = '3. Minhas Prescrições';
         formPrescricaoDesc.textContent = 'Agende lembretes usando itens do *Seu Inventário*.';
-        prescricaoSubmitBtn.textContent = 'Adicionar Prescrição';
+
+        // SUGESTÃO: Atualiza o botão para ter o ícone correto
+        prescricaoSubmitBtn.innerHTML = '<i data-lucide="save"></i> Adicionar Prescrição';
+
         cancelarEdicaoBtn.style.display = 'none';
         prescricaoInventarioSelect.value = "";
+
+        // Renderiza os ícones (do H2 e do botão)
+        lucide.createIcons();
     };
 
     const handleEditarPrescricao = (event) => {
-        const btn = event.target;
+        // SUGESTÃO: Melhoria para pegar o botão mesmo se clicar no ícone
+        const btn = event.target.closest('.edit-btn');
+        if (!btn) return;
+
         modoEdicao = true;
         idPrescricaoEdicao = btn.dataset.id;
 
@@ -345,14 +359,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         formPrescricaoTitulo.textContent = 'Editar Prescrição';
         formPrescricaoDesc.textContent = 'Modifique os dados da sua prescrição.';
-        prescricaoSubmitBtn.textContent = 'Salvar Alterações';
+
+        // SUGESTÃO: Atualiza o botão para ter o ícone correto
+        prescricaoSubmitBtn.innerHTML = '<i data-lucide="check-circle"></i> Salvar Alterações';
+
         cancelarEdicaoBtn.style.display = 'block';
 
+        // Renderiza os ícones (do H2 e do botão)
+        lucide.createIcons();
         formPrescricao.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     const handleDeletarPrescricao = async (event) => {
-        const btn = event.target;
+        // SUGESTÃO: Melhoria para pegar o botão mesmo se clicar no ícone
+        const btn = event.target.closest('.delete-prescricao-btn');
+        if (!btn) return;
+
         const id = btn.dataset.id;
 
         try {
@@ -458,6 +480,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.style.display = 'flex';
 
+        // SUGESTÃO: Renderiza ícones no modal
+        lucide.createIcons();
+
         btnConfirm.onclick = null;
         btnSkip.onclick = null;
         span.onclick = null;
@@ -482,8 +507,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mostrarAlertaEstoqueGlobal = (mensagem) => {
         console.warn("ALERTA DE ESTOQUE:", mensagem);
-        estoqueAlertBox.style.display = 'block';
-        estoqueAlertBox.innerHTML = `<strong>Alerta:</strong> ${mensagem}`;
+        // SUGESTÃO: Adiciona ícone ao alerta de estoque
+        estoqueAlertBox.innerHTML = `<i data-lucide="alert-triangle"></i> <strong>Alerta:</strong> ${mensagem}`;
+        estoqueAlertBox.style.display = 'flex';
+        // Renderiza o ícone
+        lucide.createIcons();
     };
 
     const esconderAlertaEstoqueGlobal = () => {
@@ -577,15 +605,15 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelarEdicaoBtn.addEventListener('click', resetarFormularioPrescricao);
 
     listaPrescricoes.addEventListener('click', (event) => {
-        if (event.target.classList.contains('edit-btn')) {
+        if (event.target.closest('.edit-btn')) {
             handleEditarPrescricao(event);
-        } else if (event.target.classList.contains('delete-prescricao-btn')) {
+        } else if (event.target.closest('.delete-prescricao-btn')) {
             handleDeletarPrescricao(event);
         }
     });
 
     listaInventario.addEventListener('click', (event) => {
-        if (event.target.classList.contains('delete-inventario-btn')) {
+        if (event.target.closest('.delete-inventario-btn')) {
             handleDeletarInventario(event);
         }
     });

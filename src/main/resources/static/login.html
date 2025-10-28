@@ -5,27 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Controle de Medicamentos</title>
+
+    <!-- SUGESTÃO: Fontes (Inter) e Ícones (Lucide) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="login.css">
 </head>
 
-<!-- *** ATUALIZADO: Classe adicionada ao body *** -->
-
 <body class="login-body">
 
-    <!-- *** ATUALIZADO: Wrapper agora é a base da tela dividida *** -->
     <div class="login-wrapper">
 
-        <!-- *** ATUALIZADO: Painel da Imagem (Esquerda) *** -->
+        <!-- Painel da Imagem (Esquerda) -->
         <div class="login-image-container">
-            <!-- Título do Sistema sobre a imagem -->
-            <h1 class="system-title">Controle de Medicamentos</h1>
+            <!-- SUGESTÃO: Ícone adicionado ao título -->
+            <h1 class="system-title">
+                <i data-lucide="shield-plus"></i>
+                Controle de Medicamentos
+            </h1>
         </div>
 
-        <!-- *** NOVO: Painel do Formulário (Direita) *** -->
+        <!-- Painel do Formulário (Direita) -->
         <div class="form-pane">
             <div class="card" id="login-card">
-                <h2>Login</h2>
+                <!-- SUGESTÃO: Ícone adicionado ao título -->
+                <h2><i data-lucide="log-in"></i> Login</h2>
                 <p>Acesse seu painel de controle.</p>
                 <form id="login-form">
                     <div class="form-group">
@@ -36,11 +44,16 @@
                         <label for="password">Senha:</label>
                         <input type="password" id="password" required placeholder="Digite sua senha">
                     </div>
-                    <button type="submit" id="login-button">Entrar</button>
+                    <!-- SUGESTÃO: Ícone adicionado ao botão -->
+                    <button type="submit" id="login-button"><i data-lucide="arrow-right-circle"></i> Entrar</button>
                 </form>
                 <p id="login-error" class="error-message" style="display: none;"></p>
 
-                <h2>Registrar</h2>
+                <!-- SUGESTÃO: Divisor estilizado -->
+                <div class="form-divider"></div>
+
+                <!-- SUGESTÃO: Ícone adicionado ao título -->
+                <h2><i data-lucide="user-plus"></i> Registrar</h2>
                 <p>Não tem uma conta? Crie uma.</p>
                 <form id="register-form" novalidate>
                     <div class="form-group">
@@ -59,7 +72,9 @@
                         <input type="password" id="reg-confirm-password" required placeholder="Confirme sua senha">
                         <span id="reg-confirm-password-error" class="validation-message" style="display: none;"></span>
                     </div>
-                    <button type="submit" id="register-button">Registrar</button>
+                    <!-- SUGESTÃO: Botão secundário estilizado -->
+                    <button type="submit" id="register-button" class="btn-secondary"><i data-lucide="check-circle"></i>
+                        Registrar</button>
                 </form>
                 <p id="register-success" class="success-message" style="display: none;"></p>
                 <p id="register-error" class="error-message" style="display: none;"></p>
@@ -69,6 +84,11 @@
     </div> <!-- Fim do login-wrapper -->
 
     <script src="login.js"></script>
+
+    <!-- SUGESTÃO: Script para renderizar os ícones -->
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 
 </html>

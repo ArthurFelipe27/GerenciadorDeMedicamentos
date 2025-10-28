@@ -1,30 +1,27 @@
 /* Estilos específicos para login.html */
 
-/* *** NOVO: Garante que o body ocupe 100% da altura *** */
+/* *** ATUALIZADO: Garante que o body use a fonte Inter *** */
 html,
 .login-body {
     height: 100%;
     overflow: hidden;
-    /* Impede o scroll na página de login */
+    font-family: 'Inter', sans-serif;
+    /* Aplica a fonte */
 }
 
-/* *** ATUALIZADO: Wrapper da tela dividida *** */
+/* Wrapper da tela dividida */
 .login-wrapper {
     display: flex;
     width: 100%;
     height: 100vh;
-    /* Ocupa 100% da altura da viewport */
 }
 
-/* *** ATUALIZADO: Painel da Imagem (Esquerda) *** */
+/* Painel da Imagem (Esquerda) */
 .login-image-container {
     flex: 1;
-    /* Ocupa 50% da largura */
     background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/img/senhor.png');
     background-size: cover;
     background-position: center;
-
-    /* Centraliza o título */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -33,46 +30,102 @@ html,
     color: white;
 }
 
-/* *** NOVO: Título do Sistema *** */
+/* Título do Sistema */
 .system-title {
     font-size: 3rem;
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: -1px;
+
+    /* SUGESTÃO: Alinha o ícone */
+    display: flex;
+    flex-direction: column;
+    /* Ícone em cima do texto */
+    align-items: center;
+    gap: 15px;
 }
 
-/* *** NOVO: Painel do Formulário (Direita) *** */
+.system-title svg {
+    width: 60px;
+    height: 60px;
+    stroke-width: 2px;
+}
+
+
+/* Painel do Formulário (Direita) */
 .form-pane {
     flex: 1;
-    /* Ocupa 50% da largura */
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
-    background-color: #f0f2f5;
-    /* Cor de fundo do painel */
+    background-color: #f7f9fc;
+    /* Cor de fundo suave (do global.css) */
     overflow-y: auto;
-    /* Permite scroll se o card for muito alto */
 }
 
-/* *** ATUALIZADO: Estilo do Card *** */
+/* *** ATUALIZADO: Estilo do Card (baseado no global.css) *** */
 #login-card {
     max-width: 450px;
     width: 100%;
     margin: 0;
-    /* Remove a margem automática */
     animation: fadeIn 0.5s ease-out;
-    /* Adiciona uma animação suave */
+
+    /* Estilos do global.css */
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    /* Mais padding */
+    border: 1px solid #eef1f6;
 }
 
-/* *** REMOVIDO: Estilo da imagem placeholder anterior *** */
-/* .login-hero-image { ... } */
+/* *** ATUALIZADO: Títulos h2 do card (baseado no global.css) *** */
+#login-card h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2a416a;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+#login-card h2 svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5px;
+    color: #007bff;
+}
+
+/* *** NOVO: Divisor entre os formulários *** */
+.form-divider {
+    height: 1px;
+    background-color: #eef1f6;
+    margin: 30px 0;
+}
+
+/* *** NOVO: Botão de Registrar (estilo secundário) *** */
+#register-button.btn-secondary {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+#register-button.btn-secondary:hover {
+    background-color: #e2e6ea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
 
 
-/* *** ATUALIZADO: Media Query para telas pequenas *** */
+/* Media Query para telas pequenas */
 @media (max-width: 900px) {
     .login-wrapper {
         flex-direction: column;
-        /* Empilha os painéis */
         height: auto;
         min-height: 100vh;
     }
@@ -80,30 +133,28 @@ html,
     html,
     .login-body {
         overflow: auto;
-        /* Permite scroll no mobile */
     }
 
     .login-image-container {
         flex: none;
-        /* Remove a proporção flex */
         min-height: 250px;
-        /* Altura fixa para o header com a imagem */
     }
 
     .system-title {
         font-size: 2.2rem;
-        /* Título menor no mobile */
+    }
+
+    .system-title svg {
+        width: 45px;
+        height: 45px;
     }
 
     .form-pane {
         flex-grow: 1;
-        /* Ocupa o restante do espaço */
         padding: 20px;
-        /* Garante padding no mobile */
     }
 
     #login-card {
         margin: 0;
-        /* Já estava 0, mas garantindo */
     }
 }

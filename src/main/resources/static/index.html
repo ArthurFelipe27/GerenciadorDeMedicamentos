@@ -5,6 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Medicamentos</title>
+
+    <!-- SUGESTÃO: Fontes (Inter) e Ícones (Lucide) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="app.css">
 </head>
@@ -15,146 +22,173 @@
             <h1>Painel de Controle</h1>
             <div class="user-info">
                 Logado como: <span id="username-display">...</span>
-                <button id="logout-button">Sair</button>
+                <!-- SUGESTÃO: Ícone adicionado -->
+                <button id="logout-button"><i data-lucide="log-out"></i> Sair</button>
             </div>
         </header>
 
         <!-- NOVO: Alerta de Estoque Baixo (oculto por padrão) -->
         <div id="estoque-alert-box" class="alert-box-estoque" style="display: none;">
-            <strong>Estoque Baixo!</strong> Você tem <span id="estoque-alert-qtd"></span> unidades restantes de <span
-                id="estoque-alert-nome"></span>.
+            <!-- O conteúdo será preenchido pelo app.js -->
         </div>
 
-        <!-- Seção 1: Catálogo (Definição) -->
-        <section class="card" id="catalogo-section">
-            <h2>1. Catálogo Global de Medicamentos</h2>
-            <p>Adicione novas *definições* de medicamentos ao catálogo. (Ex: "Paracetamol", "500mg").</p>
-            <form id="form-catalogo">
-                <div class="form-group">
-                    <label for="catalogo-nome">Nome do Medicamento:</label>
-                    <input type="text" id="catalogo-nome" required placeholder="Ex: Paracetamol">
-                </div>
-                <div class="form-group">
-                    <label for="catalogo-dosagem">Dosagem Padrão:</label>
-                    <input type="text" id="catalogo-dosagem" required placeholder="Ex: 500mg">
-                </div>
-                <div class="form-group">
-                    <label for="catalogo-lab">Laboratório:</label>
-                    <input type="text" id="catalogo-lab" placeholder="Ex: Neo Química">
-                </div>
-                <div class="form-group">
-                    <label for="catalogo-via">Via de Admin.:</label>
-                    <input type="text" id="catalogo-via" placeholder="Ex: Oral">
-                </div>
-                <!-- Campo de Estoque foi REMOVIDO daqui -->
-                <button type="submit">Adicionar ao Catálogo</button>
-            </form>
-        </section>
+        <!-- SUGESTÃO: Novo Layout de Grid (Dashboard) -->
+        <div class="dashboard-grid">
 
-        <!-- Seção 2: Inventário Pessoal -->
-        <section class="card" id="inventario-section">
-            <h2>2. Meu Inventário Pessoal</h2>
-            <p>Adicione os medicamentos que você *tem* em casa ao seu inventário.</p>
-            <form id="form-inventario">
-                <div class="form-group">
-                    <label for="inventario-medicamento-select">Medicamento (do Catálogo):</label>
-                    <select id="inventario-medicamento-select" required>
-                        <option value="">Carregando catálogo...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="inventario-qtd">Quantidade (unidades):</label>
-                    <input type="number" id="inventario-qtd" required placeholder="Ex: 30">
-                </div>
-                <div class="form-group">
-                    <label for="inventario-limite">Alerta de Estoque Baixo:</label>
-                    <input type="number" id="inventario-limite" required placeholder="Ex: 10">
-                </div>
-                <div class="form-group">
-                    <label for="inventario-validade">Data de Validade:</label>
-                    <input type="date" id="inventario-validade">
-                </div>
-                <button type="submit">Adicionar ao Meu Inventário</button>
-            </form>
+            <!-- Coluna Principal -->
+            <main class="main-content">
 
-            <h3>Itens no Meu Inventário</h3>
-            <ul id="lista-inventario">
-                <!-- Itens do inventário serão listados aqui -->
-            </ul>
-        </section>
+                <!-- Seção 3: Prescrições Pessoais -->
+                <section class="card" id="prescricao-section">
+                    <!-- SUGESTÃO: Ícone adicionado -->
+                    <h2 id="form-prescricao-titulo"><i data-lucide="clipboard-plus"></i> 3. Minhas Prescrições</h2>
+                    <p id="form-prescricao-descricao">Agende lembretes usando itens do *Seu Inventário*.</p>
+                    <form id="form-prescricao">
+                        <div class="form-group">
+                            <label for="prescricao-inventario-select">Item do Inventário:</label>
+                            <select id="prescricao-inventario-select" required>
+                                <option value="">Carregando inventário...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="prescricao-dosagem-texto">Dosagem (Texto):</label>
+                            <input type="text" id="prescricao-dosagem-texto" required placeholder="Ex: 1 comprimido">
+                        </div>
+                        <div class="form-group">
+                            <label for="prescricao-dosagem-qtd">Unidades por Dose:</label>
+                            <input type="number" id="prescricao-dosagem-qtd" required placeholder="Ex: 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="data-inicio">Data e Hora de Início:</label>
+                            <input type="datetime-local" id="data-inicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="intervalo">Intervalo (em horas):</label>
+                            <input type="number" id="intervalo" required placeholder="Ex: 8">
+                        </div>
+                        <div class="form-group">
+                            <label for="duracao">Duração (em dias):</label>
+                            <input type="number" id="duracao" required placeholder="Ex: 7">
+                        </div>
+                        <div class="form-group">
+                            <label for="instrucoes">Instruções:</label>
+                            <input type="text" id="instrucoes" placeholder="Ex: Tomar com água">
+                        </div>
 
-        <!-- Seção 3: Prescrições Pessoais -->
-        <section class="card" id="prescricao-section">
-            <h2 id="form-prescricao-titulo">3. Minhas Prescrições</h2>
-            <p id="form-prescricao-descricao">Agende lembretes usando itens do *Seu Inventário*.</p>
-            <form id="form-prescricao">
-                <div class="form-group">
-                    <label for="prescricao-inventario-select">Item do Inventário:</label>
-                    <select id="prescricao-inventario-select" required>
-                        <option value="">Carregando inventário...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="prescricao-dosagem-texto">Dosagem (Texto):</label>
-                    <input type="text" id="prescricao-dosagem-texto" required placeholder="Ex: 1 comprimido">
-                </div>
-                <div class="form-group">
-                    <label for="prescricao-dosagem-qtd">Unidades por Dose:</label>
-                    <input type="number" id="prescricao-dosagem-qtd" required placeholder="Ex: 1">
-                </div>
-                <div class="form-group">
-                    <label for="data-inicio">Data e Hora de Início:</label>
-                    <input type="datetime-local" id="data-inicio" required>
-                </div>
-                <div class="form-group">
-                    <label for="intervalo">Intervalo (em horas):</label>
-                    <input type="number" id="intervalo" required placeholder="Ex: 8">
-                </div>
-                <div class="form-group">
-                    <label for="duracao">Duração (em dias):</label>
-                    <input type="number" id="duracao" required placeholder="Ex: 7">
-                </div>
-                <div class="form-group">
-                    <label for="instrucoes">Instruções:</label>
-                    <input type="text" id="instrucoes" placeholder="Ex: Tomar com água">
-                </div>
+                        <div class="form-buttons">
+                            <!-- SUGESTÃO: Ícone adicionado -->
+                            <button type="submit" id="prescricao-submit-btn"><i data-lucide="save"></i> Adicionar
+                                Prescrição</button>
+                            <button type="button" id="cancelar-edicao-btn" class="btn-secondary"
+                                style="display: none;"><i data-lucide="x-circle"></i> Cancelar Edição</button>
+                        </div>
+                    </form>
 
-                <div class="form-buttons">
-                    <button type="submit" id="prescricao-submit-btn">Adicionar Prescrição</button>
-                    <button type="button" id="cancelar-edicao-btn" style="display: none;">Cancelar Edição</button>
-                </div>
-            </form>
+                    <h3>Minhas Prescrições Ativas</h3>
+                    <ul id="lista-prescricoes">
+                        <!-- Prescrições serão inseridas aqui -->
+                    </ul>
+                </section>
 
-            <h3>Minhas Prescrições Ativas</h3>
-            <ul id="lista-prescricoes">
-                <!-- Prescrições serão inseridas aqui -->
-            </ul>
-        </section>
+                <!-- Seção 4: Relatório -->
+                <section class="card" id="relatorio-section">
+                    <!-- SUGESTÃO: Ícone adicionado -->
+                    <h2><i data-lucide="check-check"></i> 4. Relatório de Adesão</h2>
+                    <ul id="lista-relatorio">
+                        <!-- Relatório será inserido aqui -->
+                    </ul>
+                </section>
+            </main>
 
-        <!-- Seção 4: Relatório -->
-        <section class="card" id="relatorio-section">
-            <h2>4. Relatório de Adesão</h2>
-            <ul id="lista-relatorio">
-                <!-- Relatório será inserido aqui -->
-            </ul>
-        </section>
+            <!-- Coluna da Sidebar -->
+            <aside class="sidebar">
+                <!-- Seção 1: Catálogo (Definição) -->
+                <section class="card" id="catalogo-section">
+                    <!-- SUGESTÃO: Ícone adicionado -->
+                    <h2><i data-lucide="package-plus"></i> 1. Catálogo Global</h2>
+                    <p>Adicione novas *definições* de medicamentos ao catálogo.</p>
+                    <form id="form-catalogo">
+                        <div class="form-group">
+                            <label for="catalogo-nome">Nome do Medicamento:</label>
+                            <input type="text" id="catalogo-nome" required placeholder="Ex: Paracetamol">
+                        </div>
+                        <div class="form-group">
+                            <label for="catalogo-dosagem">Dosagem Padrão:</label>
+                            <input type="text" id="catalogo-dosagem" required placeholder="Ex: 500mg">
+                        </div>
+                        <div class="form-group">
+                            <label for="catalogo-lab">Laboratório:</label>
+                            <input type="text" id="catalogo-lab" placeholder="Ex: Neo Química">
+                        </div>
+                        <div class="form-group">
+                            <label for="catalogo-via">Via de Admin.:</label>
+                            <input type="text" id="catalogo-via" placeholder="Ex: Oral">
+                        </div>
+                        <!-- SUGESTÃO: Ícone adicionado -->
+                        <button type="submit"><i data-lucide="plus-circle"></i> Adicionar ao Catálogo</button>
+                    </form>
+                </section>
 
-    </div>
+                <!-- Seção 2: Inventário Pessoal -->
+                <section class="card" id="inventario-section">
+                    <!-- SUGESTÃO: Ícone adicionado -->
+                    <h2><i data-lucide="archive"></i> 2. Meu Inventário</h2>
+                    <p>Adicione os medicamentos que você *tem* em casa.</p>
+                    <form id="form-inventario">
+                        <div class="form-group">
+                            <label for="inventario-medicamento-select">Medicamento (do Catálogo):</label>
+                            <select id="inventario-medicamento-select" required>
+                                <option value="">Carregando catálogo...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventario-qtd">Quantidade (unidades):</label>
+                            <input type="number" id="inventario-qtd" required placeholder="Ex: 30">
+                        </div>
+                        <div class="form-group">
+                            <label for="inventario-limite">Alerta de Estoque Baixo:</label>
+                            <input type="number" id="inventario-limite" required placeholder="Ex: 10">
+                        </div>
+                        <div class="form-group">
+                            <label for="inventario-validade">Data de Validade:</label>
+                            <input type="date" id="inventario-validade">
+                        </div>
+                        <!-- SUGESTÃO: Ícone adicionado -->
+                        <button type="submit"><i data-lucide="plus-circle"></i> Adicionar ao Meu Inventário</button>
+                    </form>
+
+                    <h3>Itens no Meu Inventário</h3>
+                    <ul id="lista-inventario">
+                        <!-- Itens do inventário serão listados aqui -->
+                    </ul>
+                </section>
+            </aside>
+
+        </div> <!-- Fim do .dashboard-grid -->
+
+    </div> <!-- Fim do .container -->
 
     <!-- Modal de Alerta de Dose (Inalterado) -->
     <div id="alert-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
-            <h2>Hora do Medicamento!</h2>
+            <!-- SUGESTÃO: Ícone adicionado -->
+            <h2><i data-lucide="alert-triangle"></i> Hora do Medicamento!</h2>
             <p id="alert-message"></p>
             <div class="modal-actions">
-                <button id="modal-confirm-dose" class="btn-confirm">Já tomei!</button>
-                <button id="modal-skip-dose" class="btn-skip">Pular dose</button>
+                <!-- SUGESTÃO: Ícones adicionados -->
+                <button id="modal-confirm-dose" class="btn-confirm"><i data-lucide="check"></i> Já tomei!</button>
+                <button id="modal-skip-dose" class="btn-skip"><i data-lucide="skip-forward"></i> Pular dose</button>
             </div>
         </div>
     </div>
 
     <script src="app.js"></script>
+
+    <!-- SUGESTÃO: Script para renderizar os ícones -->
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 
 </html>

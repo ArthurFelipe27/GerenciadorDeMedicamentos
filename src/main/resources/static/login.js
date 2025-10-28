@@ -158,4 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // SUGESTÃO: Renderiza os ícones no carregamento inicial
+    lucide.createIcons();
 });
