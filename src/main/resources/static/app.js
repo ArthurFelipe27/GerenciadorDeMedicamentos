@@ -305,20 +305,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = event.target;
         const id = btn.dataset.id;
 
-        if (confirm('Tem certeza que deseja excluir este item do inventário? (Prescrições associadas podem falhar)')) {
-            try {
-                const response = await fetch(`/api/inventario/${id}`, { method: 'DELETE', headers });
-                if (!response.ok) throw new Error('Falha ao deletar item do inventário');
+        // *** CORREÇÃO: Removido o 'if (confirm(...))' ***
+        // A função 'confirm()' não funciona no ambiente (iframe)
+        // e impedia a execução do código abaixo.
+        try {
+            const response = await fetch(`/api/inventario/${id}`, { method: 'DELETE', headers });
+            if (!response.ok) throw new Error('Falha ao deletar item do inventário');
 
-                carregarInventario(); // Recarrega lista e select
-                carregarPrescricoes(); // Recarrega prescrições (caso alguma tenha sido afetada)
-                iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
+            carregarInventario(); // Recarrega lista e select
+            carregarPrescricoes(); // Recarrega prescrições (caso alguma tenha sido afetada)
+            iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
 
-            } catch (error) {
-                console.error('Erro ao deletar inventário:', error);
-                alert('Erro ao deletar item do inventário.');
-            }
+        } catch (error) {
+            console.error('Erro ao deletar inventário:', error);
+            // *** CORREÇÃO: Removido 'alert()' que também não funciona ***
+            // alert('Erro ao deletar item do inventário.'); 
         }
+
     };
 
     // (Prescrição) Resetar formulário
@@ -362,22 +365,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = event.target;
         const id = btn.dataset.id;
 
-        if (confirm('Tem certeza que deseja excluir esta prescrição?')) {
-            try {
-                const response = await fetch(`/api/prescricoes/${id}`, { method: 'DELETE', headers });
-                if (!response.ok) throw new Error('Falha ao deletar');
+        // *** CORREÇÃO: Removido o 'if (confirm(...))' ***
+        try {
+            const response = await fetch(`/api/prescricoes/${id}`, { method: 'DELETE', headers });
+            if (!response.ok) throw new Error('Falha ao deletar');
 
-                carregarPrescricoes();
-                iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
+            carregarPrescricoes();
+            iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
 
-                if (modoEdicao && idPrescricaoEdicao == id) {
-                    resetarFormularioPrescricao();
-                }
-            } catch (error) {
-                console.error('Erro ao deletar:', error);
-                alert('Erro ao deletar prescrição.');
+            if (modoEdicao && idPrescricaoEdicao == id) {
+                resetarFormularioPrescricao();
             }
+        } catch (error) {
+            console.error('Erro ao deletar:', error);
+            // *** CORREÇÃO: Removido 'alert()' que também não funciona ***
+            // alert('Erro ao deletar prescrição.');
         }
+
     };
 
     // (Prescrição) Submit (Adicionar ou Editar)
@@ -671,4 +675,5 @@ function parseJwt(token) {
         return null;
     }
 }
+
 
