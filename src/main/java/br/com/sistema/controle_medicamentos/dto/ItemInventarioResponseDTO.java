@@ -11,15 +11,19 @@ public class ItemInventarioResponseDTO {
     private LocalDate dataValidade;
     private MedicamentoSimplesDTO medicamento; 
     private boolean alertaEstoque; 
+    private boolean vencido; // *** SUGESTÃO 2: Adicionado ***
 
     public ItemInventarioResponseDTO(ItemInventario item) {
         this.id = item.getId();
         this.quantidadeAtual = item.getQuantidadeAtual();
         this.limiteAlerta = item.getLimiteAlerta();
         this.dataValidade = item.getDataValidade();
-        // Esta linha está CORRETA e funcionará agora que MedicamentoSimplesDTO e ItemInventario têm getters
         this.medicamento = new MedicamentoSimplesDTO(item.getMedicamento());
+        
+        // Lógica de alerta e validade
         this.alertaEstoque = item.getQuantidadeAtual() <= item.getLimiteAlerta();
+        // *** SUGESTÃO 2: Lógica de validade adicionada ***
+        this.vencido = (item.getDataValidade() != null && item.getDataValidade().isBefore(LocalDate.now()));
     }
 
     // --- Getters (Manuais) ---
@@ -46,5 +50,9 @@ public class ItemInventarioResponseDTO {
     public boolean isAlertaEstoque() {
         return alertaEstoque;
     }
-}
 
+    // *** SUGESTÃO 2: Getter adicionado ***
+    public boolean isVencido() {
+        return vencido;
+    }
+}

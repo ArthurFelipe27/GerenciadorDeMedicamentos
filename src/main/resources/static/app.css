@@ -120,6 +120,7 @@ header h1 {
     line-height: 1.5;
     flex-wrap: wrap;
     border-left: 5px solid #ccc;
+    /* Borda padrão */
 }
 
 #lista-prescricoes li small,
@@ -129,11 +130,25 @@ header h1 {
     display: block;
 }
 
-/* Estilo da lista de inventário */
+/* *** SUGESTÃO 2: Estilo da lista de inventário (Modificado) *** */
 #lista-inventario li.alerta-estoque {
+    border-left-color: #ffc107;
+    /* Amarelo/Laranja para estoque baixo */
+    background-color: #fffaf0;
+}
+
+/* *** SUGESTÃO 2: Estilo para item vencido (Adicionado) *** */
+#lista-inventario li.vencido {
     border-left-color: #dc3545;
-    /* Vermelho */
+    /* Vermelho para vencido */
     background-color: #fdf0f0;
+}
+
+#lista-inventario li.vencido strong,
+#lista-inventario li.vencido small {
+    color: #721c24;
+    /* Texto mais escuro para legibilidade */
+    text-decoration: line-through;
 }
 
 

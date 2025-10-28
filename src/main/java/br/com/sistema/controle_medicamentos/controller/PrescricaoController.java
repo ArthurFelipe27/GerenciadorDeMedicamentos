@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate; // *** SUGESTÃO 2: Importado ***
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +39,6 @@ public class PrescricaoController {
     public ResponseEntity<List<PrescricaoResponseDTO>> listarPrescricoesDoUsuario() {
         Usuario usuario = getUsuarioLogado();
         
-        // CORREÇÃO: Chamando o método renomeado 'findByUsuarioId'
         List<Prescricao> prescricoes = prescricaoRepository.findByUsuarioId(usuario.getId()); 
 
         List<PrescricaoResponseDTO> dtos = prescricoes.stream()
@@ -74,6 +74,12 @@ public class PrescricaoController {
         if (!item.getUsuario().getId().equals(usuario.getId())) {
              return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Item do inventário não pertence a este usuário.");
         }
+
+        // *** SUGESTÃO 2: Verificação de Validade (Adicionado) ***
+        if (item.getDataValidade() != null && item.getDataValidade().isBefore(LocalDate.now())) {
+            return ResponseEntity.badRequest().body("Não é possível criar prescrição: O item do inventário está vencido (" + item.getDataValidade() + ").");
+        }
+        // *** FIM DA SUGESTÃO 2 ***
 
         Prescricao novaPrescricao = new Prescricao();
         novaPrescricao.setUsuario(usuario); // Seta o usuário na prescrição
@@ -114,6 +120,12 @@ public class PrescricaoController {
              return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Item do inventário não pertence a este usuário.");
         }
 
+        // *** SUGESTÃO 2: Verificação de Validade (Adicionado também na atualização) ***
+        if (item.getDataValidade() != null && item.getDataValidade().isBefore(LocalDate.now())) {
+            return ResponseEntity.badRequest().body("Não é possível atualizar prescrição: O item do inventário está vencido (" + item.getDataValidade() + ").");
+        }
+        // *** FIM DA SUGESTÃO 2 ***
+
         prescricao.setItemInventario(item);
         prescricao.setQuantidadePorDose(dto.getQuantidadePorDose());
         prescricao.setDosagemPrescrita(dto.getDosagemPrescrita());
@@ -147,4 +159,3 @@ public class PrescricaoController {
         return ResponseEntity.ok().build();
     }
 }
-

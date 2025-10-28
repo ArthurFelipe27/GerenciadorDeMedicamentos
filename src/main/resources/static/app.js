@@ -45,7 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Estado
     let modoEdicao = false;
     let idPrescricaoEdicao = null;
-    let timers = [];
+
+    // *** SUGESTÃO 3: Variáveis de Monitoramento (Modificado) ***
+    let monitoramentoIntervalo = null;
+    let alertasMostrados = new Set(); // Rastreia alertas já exibidos [prescricaoId-timestamp]
+    const INTERVALO_VERIFICACAO = 30000; // Verifica a cada 30 segundos
+
 
     // --- 1. Funções de Carregamento de Dados (Carregamento Inicial) ---
 
@@ -112,22 +117,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <strong>${item.medicamento.nome} (${item.medicamento.dosagem})</strong><br>
                         <small>Quantidade: ${item.quantidadeAtual} | Alerta em: ${item.limiteAlerta}</small>
+                        <small>Validade: ${item.dataValidade ? new Date(item.dataValidade).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</small>
                     </div>
                     <div class="botoes-acao">
                         <!-- TODO: Botão de Editar Inventário -->
                         <button class="delete-btn delete-inventario-btn" data-id="${item.id}">Excluir</button>
                     </div>
                 `;
-                if (item.alertaEstoque) {
+
+                // *** SUGESTÃO 2: Adiciona classes de alerta/vencido ***
+                if (item.vencido) {
+                    li.classList.add('vencido');
+                } else if (item.alertaEstoque) {
                     li.classList.add('alerta-estoque');
                     algumEstoqueBaixo = true;
                 }
+                // *** FIM DA SUGESTÃO 2 ***
+
                 listaInventario.appendChild(li);
 
                 // Popula o <select> do Formulário de Prescrição
                 const option = document.createElement('option');
                 option.value = item.id;
                 option.textContent = `${item.medicamento.nome} (Restam: ${item.quantidadeAtual})`;
+
+                // *** SUGESTÃO 2: Desabilita itens vencidos no select ***
+                if (item.vencido) {
+                    option.disabled = true;
+                    option.textContent += " [VENCIDO]";
+                }
+
                 prescricaoInventarioSelect.appendChild(option);
             });
 
@@ -234,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
             dosagem: document.getElementById('catalogo-dosagem').value,
             laboratorio: document.getElementById('catalogo-lab').value,
             viaAdministracao: document.getElementById('catalogo-via').value
-            // 'quantidadeEstoque' removido
         });
 
         try {
@@ -293,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Falha ao deletar item do inventário');
 
                 carregarInventario(); // Recarrega lista e select
-                // TODO: Deveria carregar prescrições também? Sim.
-                carregarPrescricoes();
+                carregarPrescricoes(); // Recarrega prescrições (caso alguma tenha sido afetada)
+                iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
 
             } catch (error) {
                 console.error('Erro ao deletar inventário:', error);
@@ -350,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Falha ao deletar');
 
                 carregarPrescricoes();
-                iniciarMonitoramento();
+                iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
 
                 if (modoEdicao && idPrescricaoEdicao == id) {
                     resetarFormularioPrescricao();
@@ -388,16 +406,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(url, { method, headers, body });
             if (!response.ok) {
-                throw new Error(modoEdicao ? 'Falha ao atualizar prescrição' : 'Falha ao adicionar prescrição');
+                // *** SUGESTÃO 2: Tenta ler a mensagem de erro (ex: item vencido) ***
+                const errorBody = await response.text();
+                throw new Error(errorBody || (modoEdicao ? 'Falha ao atualizar prescrição' : 'Falha ao adicionar prescrição'));
             }
 
             resetarFormularioPrescricao();
             carregarPrescricoes();
-            iniciarMonitoramento();
-            // carregarRelatorio(); (Não precisa, só quando toma)
+            iniciarMonitoramentoRobusto(); // Reinicia o monitoramento
         } catch (error) {
             console.error('Erro ao salvar prescrição:', error);
-            alert('Erro ao salvar prescrição.');
+            alert('Erro ao salvar prescrição: ' + error.message);
         }
     };
 
@@ -413,7 +432,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch('/api/doses', { method: 'POST', headers, body });
-            if (!response.ok) throw new Error('Falha ao registrar dose');
+
+            if (!response.ok) {
+                // *** SUGESTÃO 1: Tenta ler a mensagem de erro (ex: estoque insuficiente) ***
+                const errorBody = await response.text();
+                throw new Error(errorBody || 'Falha ao registrar dose');
+            }
 
             console.log(`Dose registrada [${status}] para prescrição ${prescricao.id}`);
             carregarRelatorio(); // Atualiza a lista de relatórios
@@ -430,13 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         mostrarAlertaEstoqueGlobal(`Estoque de ${itemInventarioAtualizado.medicamento.nome} está baixo (${itemInventarioAtualizado.quantidadeAtual} restantes).`);
                     }
                 } catch (e) {
-                    // O corpo pode estar vazio se o status não for TOMADA
                     console.log("Dose pulada, sem atualização de estoque.");
                 }
             }
         } catch (error) {
             console.error('Erro ao registrar dose:', error);
-            alert('Erro ao registrar dose.');
+            alert('Erro ao registrar dose: ' + error.message);
         }
     };
 
@@ -451,7 +474,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const mensagem = `Hora de tomar: ${prescricao.medicamento.nome} (${prescricao.dosagemPrescrita}). Instruções: ${prescricao.instrucoes || 'N/A'}`;
         document.getElementById('alert-message').textContent = mensagem;
 
-        modal.style.display = 'block';
+        // *** CORREÇÃO: Alterado de 'block' para 'flex' ***
+        // Isso garante que o modal seja exibido E centralizado,
+        // conforme definido no app.css (.modal-overlay { display: flex; })
+        modal.style.display = 'flex';
+
+        // Remove listeners antigos para evitar cliques duplicados
+        btnConfirm.onclick = null;
+        btnSkip.onclick = null;
+        span.onclick = null;
 
         btnConfirm.onclick = () => {
             registrarDose(prescricao, dataDose, "TOMADA");
@@ -473,10 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // (Alerta de Estoque)
     const mostrarAlertaEstoqueGlobal = (mensagem) => {
-        // Por simplicidade, vamos usar um alert() para o estoque baixo
-        // O ideal seria um modal não-bloqueante
         console.warn("ALERTA DE ESTOQUE:", mensagem);
-        // Mostra o box no topo da página
         estoqueAlertBox.style.display = 'block';
         estoqueAlertBox.innerHTML = `<strong>Alerta:</strong> ${mensagem}`;
     };
@@ -486,19 +514,56 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // (Monitoramento)
-    const iniciarMonitoramento = async () => {
-        timers.forEach(timerId => clearTimeout(timerId));
-        timers = [];
-        console.log('Timers antigos limpos.');
+    // *** SUGESTÃO 3: Função auxiliar para monitoramento (LÓGICA CORRIGIDA) ***
+    const calcularProximaDose = (prescricao, agora) => {
+        const inicio = new Date(prescricao.dataHoraInicio);
+        const fim = new Date(inicio);
+        fim.setDate(fim.getDate() + prescricao.duracaoDias);
 
+        if (agora > fim) return null; // Prescrição terminada
+
+        let proximaDose = new Date(inicio);
+
+        // Se a hora de início for no futuro, a próxima dose é o início
+        if (proximaDose > agora) {
+            // (Não faz nada, proximaDose já é o início)
+        } else {
+            // Se a hora de início já passou, precisamos encontrar a dose mais recente
+            // que deveria ter sido tomada.
+            while (proximaDose < agora) {
+                // Calcula a dose seguinte
+                let doseSeguinte = new Date(proximaDose);
+                doseSeguinte.setHours(doseSeguinte.getHours() + prescricao.intervaloHoras);
+
+                // Se a dose seguinte (ex: 20:00) for DEPOIS de 'agora' (ex: 14:05),
+                // significa que a dose que queremos alertar é a 'proximaDose' (ex: 14:00).
+                if (doseSeguinte > agora) {
+                    break;
+                }
+
+                // Se não, continua avançando a 'proximaDose'
+                proximaDose.setHours(proximaDose.getHours() + prescricao.intervaloHoras);
+            }
+        }
+
+        // Neste ponto, proximaDose é a dose que está para acontecer ou que acabou de passar.
+        // ex: inicio=14:00, agora=14:05 -> proximaDose = 14:00
+        // ex: inicio=14:00, agora=13:59 -> proximaDose = 14:00
+        // ex: inicio=14:00, agora=20:01, intervalo=6h -> proximaDose = 20:00
+
+        if (proximaDose > fim) return null; // A dose encontrada está fora da duração
+
+        return proximaDose;
+    };
+
+    // *** SUGESTÃO 3: Lógica de Monitoramento (Modificada) ***
+    const verificarDoses = async () => {
+        console.log("Verificando doses...", new Date().toLocaleTimeString());
         let prescricoesAtivas = [];
         try {
-            // A rota /api/prescricoes/ativas já retorna o DTO correto
             const response = await fetch('/api/prescricoes/ativas', { headers });
             if (!response.ok) throw new Error('Falha ao buscar prescrições ativas');
             prescricoesAtivas = await response.json();
-            console.log(`Encontradas ${prescricoesAtivas.length} prescrições ativas.`);
         } catch (error) {
             console.error('Erro no monitoramento:', error);
             return;
@@ -507,35 +572,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const agora = new Date();
 
         prescricoesAtivas.forEach(p => {
-            const inicio = new Date(p.dataHoraInicio);
-            const fim = new Date(inicio);
-            fim.setDate(fim.getDate() + p.duracaoDias);
-            if (agora > fim) return;
+            const proximaDose = calcularProximaDose(p, agora);
+            if (!proximaDose) return; // Prescrição inativa ou finalizada
 
-            let proximaDose = new Date(inicio);
-            while (proximaDose < agora) {
-                proximaDose.setHours(proximaDose.getHours() + p.intervaloHoras);
-            }
-            if (proximaDose > fim) return;
+            // Define um ID único para este alerta específico
+            const alertaId = `${p.id}-${proximaDose.getTime()}`;
 
+            // Calcula a diferença em minutos
             const diffMs = proximaDose.getTime() - agora.getTime();
+            const diffMin = Math.round(diffMs / 60000);
 
-            console.log(`Agendando "${p.medicamento.nome}" para ${proximaDose.toLocaleString('pt-BR')} (em ${Math.round(diffMs / 1000 / 60)} min)`);
-
-            const timerId = setTimeout(() => {
-                // p (PrescricaoResponseDTO) é passado para o alerta
-                mostrarAlerta(p, proximaDose);
-                iniciarMonitoramento();
-            }, diffMs);
-
-            timers.push(timerId);
+            // Se a hora da dose estiver nos próximos 60 segundos (ou já passou)
+            // E o alerta ainda não foi mostrado
+            if (diffMin <= 1 && !alertasMostrados.has(alertaId)) {
+                console.log(`ALERTA: Hora de tomar ${p.medicamento.nome}`);
+                mostrarAlerta(p, proximaDose); // Mostra o modal
+                alertasMostrados.add(alertaId); // Marca como mostrado
+            }
         });
     };
+
+    // *** SUGESTÃO 3: Função principal de monitoramento ***
+    const iniciarMonitoramentoRobusto = () => {
+        if (monitoramentoIntervalo) {
+            clearInterval(monitoramentoIntervalo);
+        }
+        console.log(`Iniciando monitoramento (verificação a cada ${INTERVALO_VERIFICACAO / 1000}s)`);
+
+        // Limpa os alertas antigos para o caso de recarregar
+        alertasMostrados.clear();
+
+        // Verifica imediatamente ao carregar
+        verificarDoses();
+
+        // E então agenda a verificação recorrente
+        monitoramentoIntervalo = setInterval(verificarDoses, INTERVALO_VERIFICACAO);
+    };
+
 
     // --- 4. Inicialização e Event Listeners ---
 
     document.getElementById('logout-button').addEventListener('click', () => {
-        timers.forEach(timerId => clearTimeout(timerId));
+        // *** SUGESTÃO 3: Limpa o intervalo ao sair ***
+        if (monitoramentoIntervalo) {
+            clearInterval(monitoramentoIntervalo);
+        }
         localStorage.removeItem('token');
         window.location.href = 'login.html';
     });
@@ -567,7 +648,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await carregarInventario();
         await carregarPrescricoes();
         await carregarRelatorio();
-        iniciarMonitoramento();
+        // *** SUGESTÃO 3: Chama a nova função de monitoramento ***
+        iniciarMonitoramentoRobusto();
     };
 
     carregarTudo();

@@ -17,9 +17,15 @@ public interface PrescricaoRepository extends JpaRepository<Prescricao, Long> {
     List<Prescricao> findByUsuarioId(Long usuarioId);
 
     // Query para encontrar prescrições ativas
-    // CORREÇÃO: O caminho correto para o ID do usuário é 'p.usuario.id' (a ligação direta)
-    // A ligação p.itemInventario.usuario.id também funcionaria, mas a ligação direta é mais limpa.
-    @Query("SELECT p FROM Prescricao p WHERE p.usuario.id = :usuarioId AND p.ativa = true AND (p.dataHoraInicio <= :agora AND FUNCTION('DATE_ADD', p.dataHoraInicio, p.duracaoDias, 'DAY') > :agora)")
+    // CORREÇÃO: O uso da função 'TIMESTAMPDIFF' falhou na validação do Hibernate (tipo de argumento).
+    // Voltamos a usar a lógica de 'DATE_ADD' (específica do MySQL), mas agora
+    // usando uma 'nativeQuery = true' para garantir que a sintaxe SQL
+    // 'DATE_ADD(data, INTERVAL expr UNIT)' seja executada corretamente.
+    // Também ajustamos os nomes das colunas para o padrão snake_case (ex: data_hora_inicio).
+    @Query(value = "SELECT * FROM prescricoes p WHERE p.usuario_id = :usuarioId AND p.ativa = true AND " +
+           "p.data_hora_inicio <= :agora AND " +
+           "DATE_ADD(p.data_hora_inicio, INTERVAL p.duracao_dias DAY) > :agora",
+           nativeQuery = true)
     List<Prescricao> findPrescricoesAtivas(@Param("usuarioId") Long usuarioId, @Param("agora") LocalDateTime agora);
     
 }
