@@ -172,17 +172,26 @@ document.addEventListener('DOMContentLoaded', () => {
             prescricoes.forEach(p => {
                 const item = document.createElement('li');
 
-                // *** CORREÇÃO: Convertendo o Instant (UTC) para o formato do input (local) ***
+                // Convertendo o Instant (UTC) para o formato do input (local)
                 const dataInicioFormatada = converterUTCParaInputLocal(p.dataHoraInicio);
 
-                // *** CORREÇÃO: Convertendo o Instant (UTC) para exibição (local) ***
-                const dataInicioExibicao = new Date(p.dataHoraInicio).toLocaleString('pt-BR');
+                // Convertendo o Instant (UTC) para exibição (local)
+                const dataInicio = new Date(p.dataHoraInicio);
+                const dataInicioExibicao = dataInicio.toLocaleString('pt-BR');
+
+                // *** SUGESTÃO APLICADA: Cálculo da Data Final ***
+                const dataFim = new Date(dataInicio); // Cria uma cópia da data de início
+                dataFim.setDate(dataInicio.getDate() + p.duracaoDias); // Adiciona os dias de duração
+                const dataFimExibicao = dataFim.toLocaleString('pt-BR'); // Formata para exibição
+                // *** FIM DA SUGESTÃO ***
 
                 item.innerHTML = `
                     <div>
                         <strong>${p.medicamento.nome} (${p.dosagemPrescrita})</strong><br>
                         <small>Início: ${dataInicioExibicao}</small><br>
+                        <small>Fim: ${dataFimExibicao}</small><br> 
                         <small>A cada ${p.intervaloHoras} horas (Tomando ${p.quantidadePorDose} unid.)</small>
+                        <small>Instruções: ${p.instrucoes || 'N/A'}</small> 
                     </div>
                     <div class="botoes-acao">
                         <button class="edit-btn" 
@@ -225,8 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let statusTexto = (dose.status === 'TOMADA') ? 'Tomada' : 'Pulada';
                 item.className = statusClasse;
 
-                // *** CORREÇÃO: Convertendo o Instant (UTC) para exibição (local) ***
-                // Agora 'dose.dataHoraTomada' é um Instant (ISO String)
+                // Convertendo o Instant (UTC) para exibição (local)
                 const dataTomadaExibicao = new Date(dose.dataHoraTomada).toLocaleString('pt-BR');
 
                 item.innerHTML = `
@@ -258,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/medicamentos', { method: 'POST', headers, body });
             if (!response.ok) throw new Error('Falha ao cadastrar medicamento');
 
-            // alert('Definição de medicamento adicionada ao catálogo!'); // Removido
             formCatalogo.reset();
             carregarCatalogo();
         } catch (error) {
@@ -299,7 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = event.target;
         const id = btn.dataset.id;
 
-        // 'confirm()' removido
         try {
             const response = await fetch(`/api/inventario/${id}`, { method: 'DELETE', headers });
             if (!response.ok) throw new Error('Falha ao deletar item do inventário');
@@ -329,7 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modoEdicao = true;
         idPrescricaoEdicao = btn.dataset.id;
 
-        // Popula o formulário (data-inicio já vem formatado pela função de renderização)
         prescricaoInventarioSelect.value = btn.dataset.itemInventarioId;
         document.getElementById('prescricao-dosagem-texto').value = btn.dataset.dosagemTexto;
         document.getElementById('prescricao-dosagem-qtd').value = btn.dataset.dosagemQtd;
@@ -350,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = event.target;
         const id = btn.dataset.id;
 
-        // 'confirm()' removido
         try {
             const response = await fetch(`/api/prescricoes/${id}`, { method: 'DELETE', headers });
             if (!response.ok) throw new Error('Falha ao deletar');
@@ -375,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // *** CORREÇÃO: Convertendo o valor do input (local) para ISO String (UTC) ***
         const dataHoraInicioLocal = document.getElementById('data-inicio').value;
         const dataHoraInicioUTC = new Date(dataHoraInicioLocal).toISOString();
 
@@ -383,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemInventarioId: itemInventarioId,
             quantidadePorDose: parseInt(document.getElementById('prescricao-dosagem-qtd').value, 10),
             dosagemPrescrita: document.getElementById('prescricao-dosagem-texto').value,
-            dataHoraInicio: dataHoraInicioUTC, // *** Enviando a string UTC ***
+            dataHoraInicio: dataHoraInicioUTC,
             intervaloHoras: parseInt(document.getElementById('intervalo').value, 10),
             duracaoDias: parseInt(document.getElementById('duracao').value, 10),
             instrucoes: document.getElementById('instrucoes').value
@@ -409,11 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 3. Lógica de Alerta e Estoque ---
 
-    // *** CORREÇÃO: Removido o parâmetro 'dataHoraTomada' ***
     const registrarDose = async (prescricao, status) => {
         const body = JSON.stringify({
             prescricaoId: prescricao.id,
-            // *** CORREÇÃO: Usando new Date() para pegar a hora local atual do PC ***
             dataHoraTomada: new Date().toISOString(),
             status: status
         });
@@ -432,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (status === 'TOMADA' && response.status === 201) {
                 try {
                     const itemInventarioAtualizado = await response.json();
-                    carregarInventario(); // Atualiza o inventário (lista e select)
+                    carregarInventario();
 
                     if (itemInventarioAtualizado.alertaEstoque) {
                         mostrarAlertaEstoqueGlobal(`Estoque de ${itemInventarioAtualizado.medicamento.nome} está baixo (${itemInventarioAtualizado.quantidadeAtual} restantes).`);
@@ -455,20 +456,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const mensagem = `Hora de tomar: ${prescricao.medicamento.nome} (${prescricao.dosagemPrescrita}). Instruções: ${prescricao.instrucoes || 'N/A'}`;
         document.getElementById('alert-message').textContent = mensagem;
 
-        modal.style.display = 'flex'; // 'flex' para centralizar
+        modal.style.display = 'flex';
 
-        // Remove listeners antigos
         btnConfirm.onclick = null;
         btnSkip.onclick = null;
         span.onclick = null;
 
         btnConfirm.onclick = () => {
-            // *** CORREÇÃO: Não passa 'dataDose' ***
             registrarDose(prescricao, "TOMADA");
             modal.style.display = 'none';
         };
         btnSkip.onclick = () => {
-            // *** CORREÇÃO: Não passa 'dataDose' ***
             registrarDose(prescricao, "PULADA");
             modal.style.display = 'none';
         };
@@ -493,27 +491,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const calcularProximaDose = (prescricao, agora) => {
-        // p.dataHoraInicio é um Instant (string UTC)
         const inicio = new Date(prescricao.dataHoraInicio);
         const fim = new Date(inicio);
         fim.setDate(fim.getDate() + prescricao.duracaoDias);
 
-        if (agora > fim) return null; // Prescrição terminada
+        if (agora > fim) return null;
 
         let proximaDose = new Date(inicio);
 
         if (proximaDose > agora) {
-            // A hora de início ainda está no futuro.
             return proximaDose;
         }
 
-        // A hora de início está no passado. Encontrar a dose mais recente que deveria ter sido tomada.
         while (proximaDose < agora) {
             let doseSeguinte = new Date(proximaDose);
             doseSeguinte.setHours(doseSeguinte.getHours() + prescricao.intervaloHoras);
 
-            // Se a próxima dose (doseSeguinte) for depois de 'agora',
-            // então a dose que queremos alertar é a 'proximaDose' (que está no passado).
             if (doseSeguinte > agora) {
                 break;
             }
@@ -541,7 +534,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const agora = new Date();
 
         prescricoesAtivas.forEach(p => {
-            // 'proximaDose' será um objeto Date (em fuso local)
             const proximaDose = calcularProximaDose(p, agora);
             if (!proximaDose) return;
 
@@ -550,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const diffMs = proximaDose.getTime() - agora.getTime();
             const diffMin = Math.round(diffMs / 60000);
 
-            // Se a dose estiver nos próximos 60 segundos (ou já passou)
             if (diffMin <= 1 && !alertasMostrados.has(alertaId)) {
                 console.log(`ALERTA: Hora de tomar ${p.medicamento.nome}`);
                 mostrarAlerta(p, proximaDose);
@@ -626,3 +617,4 @@ function parseJwt(token) {
         return null;
     }
 }
+
