@@ -1,16 +1,15 @@
 package br.com.sistema.controle_medicamentos.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
 // DTO para Criar/Atualizar Prescrição
 public class PrescricaoDTO {
 
-    // private Long medicamentoId; // REMOVIDO
-    private Long itemInventarioId; // MODIFICADO
-    private int quantidadePorDose; // NOVO
+    private Long itemInventarioId; 
+    private int quantidadePorDose; 
 
-    private String dosagemPrescrita; // Ex: "1 comprimido"
-    private LocalDateTime dataHoraInicio;
+    private String dosagemPrescrita; 
+    private Instant dataHoraInicio; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
     private int intervaloHoras;
     private int duracaoDias;
     private String instrucoes;
@@ -41,11 +40,11 @@ public class PrescricaoDTO {
         this.dosagemPrescrita = dosagemPrescrita;
     }
 
-    public LocalDateTime getDataHoraInicio() {
+    public Instant getDataHoraInicio() { // *** CORREÇÃO: Instant ***
         return dataHoraInicio;
     }
 
-    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
+    public void setDataHoraInicio(Instant dataHoraInicio) { // *** CORREÇÃO: Instant ***
         this.dataHoraInicio = dataHoraInicio;
     }
 
@@ -73,4 +72,3 @@ public class PrescricaoDTO {
         this.instrucoes = instrucoes;
     }
 }
-

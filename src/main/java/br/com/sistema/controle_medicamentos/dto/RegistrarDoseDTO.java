@@ -1,12 +1,12 @@
 package br.com.sistema.controle_medicamentos.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
 public class RegistrarDoseDTO {
     
     private Long prescricaoId;
-    private LocalDateTime dataHoraTomada;
-    private String status; // NOVO: "TOMADA" ou "PULADA"
+    private Instant dataHoraTomada; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
+    private String status; 
 
     // --- Getters e Setters (Sem Lombok) ---
 
@@ -18,11 +18,11 @@ public class RegistrarDoseDTO {
         this.prescricaoId = prescricaoId;
     }
 
-    public LocalDateTime getDataHoraTomada() {
+    public Instant getDataHoraTomada() { // *** CORREÇÃO: Instant ***
         return dataHoraTomada;
     }
 
-    public void setDataHoraTomada(LocalDateTime dataHoraTomada) {
+    public void setDataHoraTomada(Instant dataHoraTomada) { // *** CORREÇÃO: Instant ***
         this.dataHoraTomada = dataHoraTomada;
     }
 
@@ -34,4 +34,3 @@ public class RegistrarDoseDTO {
         this.status = status;
     }
 }
-

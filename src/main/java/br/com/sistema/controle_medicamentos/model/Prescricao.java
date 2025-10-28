@@ -1,7 +1,7 @@
 package br.com.sistema.controle_medicamentos.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
 @Entity
 @Table(name = "prescricoes")
@@ -15,17 +15,15 @@ public class Prescricao {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    // MODIFICADO: Ligado ao ItemInventario, não mais ao Medicamento
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_inventario_id", nullable = false)
     private ItemInventario itemInventario; 
     
-    // NOVO: Quantidade a ser debitada do estoque por dose
     @Column(nullable = false)
     private int quantidadePorDose; 
 
-    private String dosagemPrescrita; // Ex: "1 comprimido", "10 gotas" (Texto)
-    private LocalDateTime dataHoraInicio;
+    private String dosagemPrescrita; 
+    private Instant dataHoraInicio; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
     private int intervaloHoras;
     private int duracaoDias;
     private String instrucoes;
@@ -54,10 +52,10 @@ public class Prescricao {
     public void setDosagemPrescrita(String dosagemPrescrita) {
         this.dosagemPrescrita = dosagemPrescrita;
     }
-    public LocalDateTime getDataHoraInicio() {
+    public Instant getDataHoraInicio() { // *** CORREÇÃO: Instant ***
         return dataHoraInicio;
     }
-    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
+    public void setDataHoraInicio(Instant dataHoraInicio) { // *** CORREÇÃO: Instant ***
         this.dataHoraInicio = dataHoraInicio;
     }
     public int getIntervaloHoras() {
@@ -85,7 +83,6 @@ public class Prescricao {
         this.ativa = ativa;
     }
     
-    // Get/Set novos (O PONTO DA CORREÇÃO)
     public ItemInventario getItemInventario() {
         return itemInventario;
     }
@@ -99,4 +96,3 @@ public class Prescricao {
         this.quantidadePorDose = quantidadePorDose;
     }
 }
-

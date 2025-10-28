@@ -1,22 +1,21 @@
 package br.com.sistema.controle_medicamentos.dto;
 
 import br.com.sistema.controle_medicamentos.model.DoseTomada;
-import java.time.LocalDateTime;
+import java.time.Instant; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
 public class DoseTomadaResponseDTO {
     
     private Long id;
-    private LocalDateTime dataHoraTomada;
+    private Instant dataHoraTomada; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
     private String nomeMedicamento;
     private String dosagemPrescrita;
     private String status; 
 
     public DoseTomadaResponseDTO(DoseTomada dose) {
         this.id = dose.getId();
-        this.dataHoraTomada = dose.getDataHoraTomada();
+        this.dataHoraTomada = dose.getDataHoraTomada(); // *** CORREÇÃO: Instant ***
         this.status = dose.getStatus(); 
         
-        // CORREÇÃO: O caminho agora é Prescricao -> ItemInventario -> Medicamento
         this.nomeMedicamento = dose.getPrescricao().getItemInventario().getMedicamento().getNome();
         this.dosagemPrescrita = dose.getPrescricao().getDosagemPrescrita();
     }
@@ -26,7 +25,7 @@ public class DoseTomadaResponseDTO {
         return id;
     }
 
-    public LocalDateTime getDataHoraTomada() {
+    public Instant getDataHoraTomada() { // *** CORREÇÃO: Instant ***
         return dataHoraTomada;
     }
 
@@ -42,4 +41,3 @@ public class DoseTomadaResponseDTO {
         return status;
     }
 }
-

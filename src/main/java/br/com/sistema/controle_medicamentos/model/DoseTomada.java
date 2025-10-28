@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
 @Entity
 @Table(name = "doses_tomadas")
@@ -23,16 +23,16 @@ public class DoseTomada {
     private Prescricao prescricao;
 
     @JoinColumn(nullable = false)
-    private LocalDateTime dataHoraTomada; // Horário que a dose foi (confirmada ou pulada)
+    private Instant dataHoraTomada; // *** CORREÇÃO: Mudado de LocalDateTime para Instant ***
 
     @JoinColumn(nullable = false)
-    private String status; // NOVO: "TOMADA" ou "PULADA"
+    private String status; 
 
     // --- Construtores (Sem Lombok) ---
     public DoseTomada() {
     }
 
-    public DoseTomada(Prescricao prescricao, LocalDateTime dataHoraTomada, String status) {
+    public DoseTomada(Prescricao prescricao, Instant dataHoraTomada, String status) { // *** CORREÇÃO: Instant ***
         this.prescricao = prescricao;
         this.dataHoraTomada = dataHoraTomada;
         this.status = status;
@@ -55,11 +55,11 @@ public class DoseTomada {
         this.prescricao = prescricao;
     }
 
-    public LocalDateTime getDataHoraTomada() {
+    public Instant getDataHoraTomada() { // *** CORREÇÃO: Instant ***
         return dataHoraTomada;
     }
 
-    public void setDataHoraTomada(LocalDateTime dataHoraTomada) {
+    public void setDataHoraTomada(Instant dataHoraTomada) { // *** CORREÇÃO: Instant ***
         this.dataHoraTomada = dataHoraTomada;
     }
 
@@ -71,4 +71,3 @@ public class DoseTomada {
         this.status = status;
     }
 }
-
