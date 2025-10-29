@@ -48,6 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return localDate.toISOString().slice(0, 16);
     }
 
+    // *** NOVO: Função auxiliar para escapar HTML/atributos ***
+    function escapeHTML(str) {
+        if (str === null || str === undefined) return "";
+        return str.toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     // --- 1. Funções de Carregamento de Dados (Carregamento Inicial) ---
 
     const carregarCatalogo = async () => {
@@ -181,6 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 dataFim.setDate(dataInicio.getDate() + p.duracaoDias);
                 const dataFimExibicao = dataFim.toLocaleString('pt-BR');
 
+                // *** CORREÇÃO: Aplicar escapeHTML nos atributos de texto ***
+                const dosagemTextoSanitized = escapeHTML(p.dosagemPrescrita);
+                const instrucoesSanitized = escapeHTML(p.instrucoes);
+
                 // SUGESTÃO: Adicionados ícones aos botões
                 item.innerHTML = `
                     <div>
@@ -195,12 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             title="Editar prescrição"
                             data-id="${p.id}"
                             data-item-inventario-id="${p.itemInventarioId}"
-                            data-dosagem-texto="${p.dosagemPrescrita}"
+                            data-dosagem-texto="${dosagemTextoSanitized}"
                             data-dosagem-qtd="${p.quantidadePorDose}"
                             data-inicio="${dataInicioFormatada}" 
                             data-intervalo="${p.intervaloHoras}"
                             data-duracao="${p.duracaoDias}"
-                            data-instrucoes="${p.instrucoes || ''}">
+                            data-instrucoes="${instrucoesSanitized}">
                             <i data-lucide="edit-3"></i>
                         </button>
                         <button class="delete-btn delete-prescricao-btn" data-id="${p.id}" title="Excluir prescrição">
@@ -645,4 +660,5 @@ function parseJwt(token) {
         return null;
     }
 }
+
 
